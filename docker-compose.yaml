@@ -1,7 +1,6 @@
 services:
   elasticsearch:
     image: elasticsearch:7.17.27
-    container_name: postiz-elasticsearch
     environment:
       - cluster.routing.allocation.disk.threshold_enabled=true
       - cluster.routing.allocation.disk.watermark.low=512mb
@@ -12,8 +11,6 @@ services:
       - xpack.security.enabled=false
     volumes:
       - elasticsearch-data:/usr/share/elasticsearch/data
-    networks:
-      - coolify
     healthcheck:
       test: ["CMD-SHELL", "curl -sf http://localhost:9200/_cluster/health || exit 1"]
       interval: 10s
@@ -23,7 +20,6 @@ services:
 
   temporal:
     image: temporalio/auto-setup:latest
-    container_name: postiz-temporal
     depends_on:
       elasticsearch:
         condition: service_healthy
@@ -35,12 +31,10 @@ services:
       - POSTGRES_SEEDS=wvszpfhmo27saxn0bfbwokze
       - DYNAMIC_CONFIG_FILE_PATH=config/dynamicconfig/development-sql.yaml
       - ENABLE_ES=true
-      - ES_SEEDS=postiz-elasticsearch
+      - ES_SEEDS=elasticsearch
       - ES_VERSION=v7
     ports:
       - "7233:7233"
-    networks:
-      - coolify
     healthcheck:
       test: ["CMD", "temporal", "operator", "cluster", "health"]
       interval: 10s
@@ -50,16 +44,13 @@ services:
 
   temporal-ui:
     image: temporalio/ui:latest
-    container_name: postiz-temporal-ui
     depends_on:
       - temporal
     environment:
-      - TEMPORAL_ADDRESS=postiz-temporal:7233
+      - TEMPORAL_ADDRESS=temporal:7233
       - TEMPORAL_CORS_ORIGINS=https://redes.radioinsular.es
     ports:
       - "8080:8080"
-    networks:
-      - coolify
 
 volumes:
   elasticsearch-data:
