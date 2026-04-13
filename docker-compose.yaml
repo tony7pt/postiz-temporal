@@ -11,6 +11,9 @@ services:
       - xpack.security.enabled=false
     volumes:
       - elasticsearch-data:/usr/share/elasticsearch/data
+    networks:
+      - coolify
+      - default
     healthcheck:
       test: ["CMD-SHELL", "curl -sf http://localhost:9200/_cluster/health || exit 1"]
       interval: 10s
@@ -33,6 +36,9 @@ services:
       - ENABLE_ES=true
       - ES_SEEDS=elasticsearch
       - ES_VERSION=v7
+    networks:
+      - coolify
+      - default
     healthcheck:
       test: ["CMD", "temporal", "operator", "cluster", "health"]
       interval: 10s
@@ -47,6 +53,9 @@ services:
     environment:
       - TEMPORAL_ADDRESS=temporal:7233
       - TEMPORAL_CORS_ORIGINS=https://redes.radioinsular.es
+    networks:
+      - coolify
+      - default
 
 volumes:
   elasticsearch-data:
@@ -54,3 +63,5 @@ volumes:
 networks:
   coolify:
     external: true
+  default:
+    driver: bridge
